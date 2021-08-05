@@ -1,0 +1,187 @@
+log --> (logstash)(Data processing)-->elasticsearch(storage)-->Kibana(visualize)
+
+
+spring boot APP ---> log--> logstash---> elasticsearch --> kibana
+
+
+Download ElasticSearch: https://www.elastic.co/downloads/elas...
+
+
+Download Logstash: https://www.elastic.co/downloads/logs...
+
+
+Download Kibana: https://www.elastic.co/downloads/kibana
+
+goto elastic search --> bin downloaded folder 
+elasticsearch batch file need to run --> elasticsearch.bat in cmd from that bin folder (will take some time)
+ we will obserbe in logs it's started message
+ 
+elasticsearch is running on port 9200--> in browser open this url localhost:9200
+
+
+
+> Go to Kibana
+kibana--> config folder-->kibana.yml
+search for -> elasticsearch.hosts: [http... :9000] this line needs to uncomment 
+ means we need to confirm kibana where mu elasticsearch is up and rrunning.
+
+go to bin folder and run kibana.bat
+
+Kibana up on port 5601 --> in browser open this url localhost:5601
+
+
+
+create one spring boot APP
+
+go to application.yml file 
+add this info 
+
+logging:
+ file: copy log file where logs stored on your machine (c:/xx/xx/elk_logstach.log)
+ 
+Run application and generate logs, verify logs registerded in the above mentioned path
+
+go logstach folder --> bin--> logstash.bat
+
+go this path-> https://www.elastic.co/downloads/logstash
+
+and observe installation steps
+
+
+create file with this name (logstash.conf)
+
+
+input {
+  file {
+    path => "/tmp/access_log"  <-- pass path of your log file
+    start_position => "beginning"
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]  <-- logstash push all the data to elastic search
+	--index=provide your own index name here if you want 
+  }
+  stdout { codec => rubydebug }
+}
+ 
+ More examples refer below url:
+ https://www.elastic.co/guide/en/logstash/current/config-examples.html
+ 
+ if we want to view some specific logs then add filters in .cong file
+ 
+go to bin of logstash and past this .cnf file
+go to bin then run --> logstash -f logstash.cnf
+logstash is up on 9600 --> localhost:9600
+
+go and observe in logstash console  user found with ids and and user not found
+
+
+lets verify indexes --> localhost:9200/_cat
+
+find --> indices
+
+locahost:9200/_cat/indices
+
+listed out all indexes created by elasticsearch
+
+logstash_currenttime stamp index we can obsorve here
+
+this content we can view in Kibana console
+
+give this index and search
+
+localhost:9200/logstash_currenttimestamp/_search
+
+
+
+go to kibana and create index pattern
+
+
+go to management--> under kibana  choose index patterns--> create index pattern--> provide index name under index pattern and searh it will list your index name choose it
+
+click on next steps
+
+under time filter filed name choose opions --> create index pattern
+
+we can see all our log under that index pattern
+
+click on discover --> we can see our index
+
+
+
+go to kibana --> choose devtolls to create index
+
+under console --
+
+(query to create index)
+PUT /javatechie
+{
+"settings": {
+ "index":{
+	"number_of_shards": 3,
+	"number_of_replicas": 
+ }
+}
+}
+
+click to send request
+
+we will get response as acknowledge as ture
+and index is javatechie
+
+add document to that particular index
+
+just we want oadd some dummy document ot index
+
+POSt /javatechie/default/
+{
+
+"name":"event processing",
+"instructor":{
+"firstname":"java",
+"lastname":"techie"
+}
+
+}
+
+
+send request
+
+in response result: created  and index name is javatechie and id of inex will be there in response
+
+we just need to add index and file path under logstash .conf file
+
+
+input {
+  file {
+    path => "/tmp/access_log"  <-- pass path of your log file
+    start_position => "beginning"
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]  <-- logstash push all the data to elastic search
+	index="javatechie-%{+yyyy.MM.dd}"
+  }
+  stdout { codec => rubydebug }
+}
+
+
+go to Management -->kibana--> index pattern--> provide index name like javatech* then will list that index--> choose it-->next step> create index pattern --> discover--> filer our custom index
+
+ 
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
